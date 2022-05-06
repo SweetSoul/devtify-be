@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mysql-database:
+      image: mariadb:latest
+      container_name: mysql-database
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: test_db
+      ports:
+        - "3306:3306"
+      volumes:
+        - ./database/dump_sql.sql:/dump_sql.sql
+  php-apache:
+    container_name: php-apache
+    build:
+      context: ./php
+    ports:
+        - '80:80'
+    volumes:
+      - ./:/var/www/devtify
+      - ./apache/default.conf:/etc/apache2/sites-enabled/000-default.conf
+      #- ./apache/phpconf/php.ini:/usr/local/etc/php/php.ini
+      #- ./apache/phpconf/php.ini:/etc/php.ini
+    depends_on:
+      - mysql-database
+  composer_installation:
+    container_name: composer_installation
+    image: composer
+    volumes:
+      - ./:/app
+    command: composer install --ignore-platform-reqs
